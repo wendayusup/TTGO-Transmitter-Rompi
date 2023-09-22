@@ -104,64 +104,6 @@ void startdevice()
 
 // ---------------------------------------PROCEDURE FOR MAIN CODE----------------------------------------------------
 
-// MAIN CODE GPS & SHOWING OLED
-void gpsdata()
-{
-  while (neogps.available())
-    if (gps.encode(neogps.read()))
-
-      if (gps.location.isValid())
-      {
-        // Calculation & Definition
-        latitude = String(gps.location.lat(), 6);
-        longitude = String(gps.location.lng(), 6);
-        sog = String(gps.speed.kmph(), 1);
-        cog = ((gps.course.deg()));
-     
-
-        // OLED Showing
-        display.clearDisplay();
-        display.setTextSize(1);
-        display.setTextColor(SSD1306_WHITE);
-        display.setCursor(0, 0);
-        display.println(String() + "MKRRMP011222" + "    RMP01");
-        display.println("---------------------");
-        display.println(String() + "RSSI : " + LoRa.packetRssi());
-        display.println(String() + "Lat  : " + latitude);
-        display.println(String() + "Lon  : " + longitude);
-        display.println(String() + "Sog  : " + sog + " Km/h");
-        display.println(String() + "Cog  : " + cog + " Deg");
-        display.println(String() + "Batt : " + batt + "%");
-        display.display();
-
-        // // Serial Showing
-        // Serial.print("Position:");
-        // Serial.print(gps.location.lat(), 6);
-        // Serial.print(F(","));
-        // Serial.println(gps.location.lng(), 6);
-        // Serial.print("Sog : ");
-        // Serial.println(gps.speed.kmph());
-        // Serial.print("Cog :");
-        // Serial.println(gps.course.deg());
-        // Serial.print("Batt :");
-        // Serial.print(batt);
-        // Serial.println("%");
-      }
-      else
-      {
-        display.setCursor(0, 0);
-        display.clearDisplay();
-        display.setTextColor(SSD1306_WHITE);
-        display.setTextSize(1);
-        display.println(String() + "MKRRMP011222" + "    RMP01");
-        display.println("---------------------");
-        display.println(String() + "Searching GPS...");
-        display.println("");
-        display.println(String() + "RSSI: " + LoRa.packetRssi() + "   Batt:" + batt + "%");
-        display.println(String() + "Press RESET button ifit has still no GPS.");
-        display.display();
-      }
-}
 
 // MAIN CODE STARTING LORA
 void startLoRa()
@@ -252,6 +194,75 @@ void setup()
 }
 
 
+// MAIN CODE GPS & SHOWING OLED
+void gpsdata()
+{
+  while (neogps.available())
+    if (gps.encode(neogps.read()))
+      if (gps.location.isValid())
+      {
+        display.clearDisplay();
+        display.setTextSize(1);            
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 0);
+
+        latitude = String(gps.location.lat(), 6);
+        longitude = String(gps.location.lng(), 6);
+        sog = String(gps.speed.kmph(), 1);
+        cog = ((gps.course.deg()));
+        batt = (axp.getBattVoltage() / fullvol - minvol) * 100 / 1000;
+
+
+        display.println(String() + "MKRRMP011222" + "    RMP01");
+        display.println("---------------------");
+        display.println(String() + "RSSI : " + LoRa.packetRssi());
+        display.println(String() + "Lat  : " + latitude);
+        display.println(String() + "Lon  : " + longitude);
+        display.println(String() + "Sog  : " + sog + " Km/h");
+        display.println(String() + "Cog  : " + cog + " Deg");
+        display.println(String() + "Batt : " + batt + "%");
+        display.display();
+
+        Serial.print("Position:");
+        Serial.print(gps.location.lat(), 6);
+        Serial.print(F(","));
+        Serial.println(gps.location.lng(), 6);
+        Serial.print("Sog : ");
+        Serial.println(gps.speed.kmph());
+        Serial.print("Cog :");
+        Serial.println(gps.course.deg());
+        Serial.print("Batt :");
+        Serial.print(batt);
+        Serial.println("%");
+      }
+      else
+      {
+        display.clearDisplay();
+        display.setTextSize(2);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 0);
+        display.println(String() +  + " WAIT...");
+        display.println("");
+        display.setTextSize(1);
+        display.println(String() + "  GPS need Signing!");
+        display.println("");
+        display.println(String() + "Press  RESET button  if it still no GPS.");
+        display.display();
+
+        Serial.print("Position:");
+        Serial.print(gps.location.lat(), 6);
+        Serial.print(F(","));
+        Serial.println(gps.location.lng(), 6);
+        Serial.print("Sog : ");
+        Serial.println(gps.speed.kmph());
+        Serial.print("Cog :");
+        Serial.println(gps.course.deg());
+        Serial.print("Batt :");
+        Serial.print(batt);
+        Serial.println("%");
+      }
+}
+
 
 
 //-----------------------------------------------VOID LOOP--------------------------------------------------------------------
@@ -276,9 +287,9 @@ void loop()
     ESP.restart();
   }
   batt = ((axp.getBattVoltage() - minvol) / (fullvol - minvol) * 100);
-  Serial.print("Batt :");
-  Serial.print(batt);
-  Serial.println("%");
+  // Serial.print("Batt :");
+  // Serial.print(batt);
+  // Serial.println("%");
   gpsdata();
 
   PayLoad = String() + ID + "," + latitude + "," + longitude + "," + sog + "," + batt + ",0,*";
